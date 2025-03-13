@@ -1,0 +1,27 @@
+FROM ubuntu:latest
+
+# Install dependencies
+RUN apt update && apt install -y \
+    fuse3 \
+    python3 \
+    python3-pip \
+    openssl && \
+    pip install fusepy && \
+    apt clean && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user (recommended for security)
+RUN useradd -m -s /bin/bash fuseuser && \
+    mkdir -p /mnt/certfs && \
+    chown fuseuser:fuseuser /mnt/certfs
+
+# Switch to non-root user
+USER fuseuser
+
+# Set up work directory
+WORKDIR /mnt/c/source
+
+# Copy source files
+COPY fusefs.py /mnt/c/source/
+
+# Run the FUSE script
+CMD ["python3", "/mnt/c/source/fusefs.py"]
